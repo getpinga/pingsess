@@ -3,6 +3,7 @@
 namespace Odan\Session;
 
 use PDO;
+use Pinga\Cookie;
 
 /**
  * A PDO session handler adapter.
@@ -35,7 +36,7 @@ final class PdoSession implements SessionInterface, SessionManagerInterface
         $id = $_COOKIE[$this->options['name']] ?? '';
         if (!$id) {
             $id = str_replace('.', '', uniqid('sess_', true));
-            setcookie($this->options['name'], $id, time() + $this->options['lifetime'], '/', '', false, true);
+            Cookie::setcookie($this->options['name'], $id, time() + $this->options['lifetime'], '/', '', false, true);
         }
 
         session_id($id);
@@ -77,7 +78,7 @@ final class PdoSession implements SessionInterface, SessionManagerInterface
 
         $this->regenerateId();
 		
-        setcookie($this->options['name'], '', time() - 3600, '/', '', false, true);
+        Cookie::setcookie($this->options['name'], '', time() - 3600, '/', '', false, true);
     }
 
     public function getId(): string
@@ -176,7 +177,7 @@ final class PdoSession implements SessionInterface, SessionManagerInterface
             $stmt->execute();
         }
 		
-        setcookie($this->options['name'], $id, time() + $this->options['lifetime'], '/', '', false, true);
+        Cookie::setcookie($this->options['name'], $id, time() + $this->options['lifetime'], '/', '', false, true);
     }
 
 }
