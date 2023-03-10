@@ -105,13 +105,13 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
     public function set(string $key, mixed $value): void
     {
         $this->storage[$key] = $value;
-        $this->filesystem->put($this->options['name'] . '/' . $this->id . '.json', json_encode($this->storage));
+        $this->filesystem->write($this->options['name'] . '/' . $this->id . '.json', json_encode($this->storage));
     }
 
     public function setValues(array $values): void
     {
         $this->storage = array_merge($this->storage, $values);
-        $this->filesystem->put($this->options['name'] . '/' . $this->id . '.json', json_encode($this->storage));
+        $this->filesystem->write($this->options['name'] . '/' . $this->id . '.json', json_encode($this->storage));
     }
 
     public function has(string $key): bool
@@ -122,7 +122,7 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
     public function delete(string $key): void
     {
         unset($this->storage[$key]);
-        $this->filesystem->put($$this->options['name'] . '/' . $this->id . '.json', json_encode($this->storage));
+        $this->filesystem->write($$this->options['name'] . '/' . $this->id . '.json', json_encode($this->storage));
     }
 
     public function clear(): void
