@@ -1,12 +1,12 @@
 {
-    "name": "pinga/pinglet-session",
+    "name": "pinga/pingsess",
     "type": "library",
     "description": "A PHP session handler",
     "keywords": [
         "slim",
         "session"
     ],
-    "homepage": "https://github.com/getpinga/pinglet-session",
+    "homepage": "https://github.com/getpinga/pingsess",
     "license": "MIT",
     "require": {
         "php": "^8.1",
