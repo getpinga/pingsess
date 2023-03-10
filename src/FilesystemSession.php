@@ -3,7 +3,7 @@
 namespace Odan\Session;
 
 use League\Flysystem\Filesystem;
-use Pinga\Cookie;
+use \Pinga\Cookie;
 
 /**
  * A Flysystem session handler adapter.
