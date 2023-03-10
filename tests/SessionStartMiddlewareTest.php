@@ -1,10 +1,10 @@
 <?php
 
-namespace Odan\Session\Test;
+namespace Pinga\Pingsess\Test;
 
 use Middlewares\Utils\Dispatcher;
-use Odan\Session\Middleware\SessionStartMiddleware;
-use Odan\Session\PhpSession;
+use Pinga\Pingsess\Middleware\SessionStartMiddleware;
+use Pinga\Pingsess\PhpSession;
 use PHPUnit\Framework\TestCase;
 
 /**
