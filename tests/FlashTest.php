@@ -1,8 +1,8 @@
 <?php
 
-namespace Odan\Session\Test;
+namespace Pinga\Pingsess\Test;
 
-use Odan\Session\Flash;
+use Pinga\Pingsess\Flash;
 use PHPUnit\Framework\TestCase;
 
 class FlashTest extends TestCase
