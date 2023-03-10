@@ -1,6 +1,6 @@
 <?php
 
-namespace Odan\Session;
+namespace Pinga\Pingsess;
 
 use League\Flysystem\Filesystem;
 use \Pinga\Cookie;
