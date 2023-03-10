@@ -3,7 +3,7 @@
 namespace Odan\Session;
 
 use Memcached;
-use Pinga\Cookie;
+use \Pinga\Cookie;
 
 /**
  * A Memcached session handler adapter.
