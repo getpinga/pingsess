@@ -1,3 +1,5 @@
+<?php
+
 namespace Odan\Session;
 
 use Redis;
@@ -12,11 +14,15 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
         'lifetime' => 7200,
     ];
 
-    private Redis $redis;
+    private array $storage;
 
-    private string $id = '';
+    private Flash $flash;
+
+    private string $id;
 
     private bool $started = false;
+
+    private Redis $redis;
 
     public function __construct(Redis $redis, array $options = [])
     {
@@ -28,6 +34,19 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
                 $this->options[$key] = $options[$key];
             }
         }
+
+        $this->id = $_COOKIE[$this->options['name']] ?? '';
+        if (!$this->id) {
+            $this->id = str_replace('.', '', uniqid('sess_', true));
+            setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
+        }
+
+        $key = $this->options['name'] . ':' . $this->id;
+        $data = $this->redis->get($key);
+        $this->storage = json_decode($data, true) ?: [];
+		
+        $this->storage = $this->getSessionData();
+        $this->flash = new Flash($this->storage);
     }
 
     public function getFlash(): FlashInterface
@@ -54,7 +73,13 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
 
     public function regenerateId(): void
     {
+        $oldId = $this->id;
         $this->id = str_replace('.', '', uniqid('sess_', true));
+        setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
+
+        $oldKey = $this->options['name'] . ':' . $oldId;
+        $newKey = $this->options['name'] . ':' . $this->id;
+        $this->redis->rename($oldKey, $newKey);
     }
 
     public function destroy(): void
@@ -111,7 +136,11 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
 
     public function save(): void
     {
-        $this->redis->expire($this->id, $this->options['lifetime']);
+        $payload = json_encode($this->storage);
+        $key = $this->options['name'] . ':' . $this->id;
+        $this->redis->set($key, $payload, $this->options['lifetime']);
+
+        setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
     }
 
     private function load(): void
