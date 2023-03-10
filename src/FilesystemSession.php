@@ -39,7 +39,7 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
         $this->id = $_COOKIE[$this->options['name']] ?? '';
         if (!$this->id) {
             $this->id = str_replace('.', '', uniqid('sess_', true));
-            setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
+            Cookie::setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
         }
 
         $filename = $this->options['name'] . '/' . $this->id . '.json';
@@ -74,7 +74,7 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
     {
         $oldId = $this->id;
         $this->id = str_replace('.', '', uniqid('sess_', true));
-        setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
+        Cookie::setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
 
         $oldFilename = $this->options['name'] . '/' . $oldId . '.json';
         $newFilename = $this->options['name'] . '/' . $this->id . '.json';
@@ -150,7 +150,7 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
         $filename = $this->options['name'] . '/' . $this->id . '.json';
         $this->filesystem->write($filename, $payload);
 
-        setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
+        Cookie::setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
     }
 
 }
