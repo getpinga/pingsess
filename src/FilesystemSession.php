@@ -14,18 +14,20 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
         'lifetime' => 7200,
     ];
 
-    private Filesystem $filesystem;
-
-    private array $storage = [];
+    private array $storage;
 
     private Flash $flash;
 
-    private string $id = '';
+    private string $id;
 
     private bool $started = false;
 
+    private Filesystem $filesystem;
+
     public function __construct(Filesystem $filesystem, array $options = [])
     {
+        $this->filesystem = $filesystem;
+
         $keys = array_keys($this->options);
         foreach ($keys as $key) {
             if (array_key_exists($key, $options)) {
@@ -33,16 +35,18 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
             }
         }
 
-        $this->filesystem = $filesystem;
-
+        $this->id = $_COOKIE[$this->options['name']] ?? '';
         if (!$this->id) {
-            $this->regenerateId();
+            $this->id = str_replace('.', '', uniqid('sess_', true));
+            setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
         }
 
-        $sessionFilename = $this->options['name'] . '/' . $this->id . '.json';
-        if ($this->filesystem->has($sessionFilename)) {
-            $content = $this->filesystem->read($sessionFilename);
-            $this->storage = json_decode($content, true);
+        $filename = $this->options['name'] . '/' . $this->id . '.json';
+        if ($this->filesystem->has($filename)) {
+            $data = $this->filesystem->read($filename);
+            $this->storage = json_decode($data, true) ?: [];
+        } else {
+            $this->storage = [];
         }
 
         $this->flash = new Flash($this->storage);
@@ -67,7 +71,15 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
 
     public function regenerateId(): void
     {
+        $oldId = $this->id;
         $this->id = str_replace('.', '', uniqid('sess_', true));
+        setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
+
+        $oldFilename = $this->options['name'] . '/' . $oldId . '.json';
+        $newFilename = $this->options['name'] . '/' . $this->id . '.json';
+        if ($this->filesystem->has($oldFilename)) {
+            $this->filesystem->move($oldFilename, $newFilename);
+        }
     }
 
     public function destroy(): void
@@ -133,8 +145,11 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
 
     public function save(): void
     {
-        // The session data is saved automatically on each set(), setValues(), delete() and clear() call.
-        // This method does not need to do anything.
+        $payload = json_encode($this->storage);
+        $filename = $this->options['name'] . '/' . $this->id . '.json';
+        $this->filesystem->write($filename, $payload);
+
+        setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
     }
 
 }
