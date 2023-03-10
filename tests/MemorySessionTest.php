@@ -1,8 +1,8 @@
 <?php
 
-namespace Odan\Session\Test;
+namespace Pinga\Pingsess\Test;
 
-use Odan\Session\MemorySession;
+use Pinga\Pingsess\MemorySession;
 
 /**
  * Memory Session Test.
