@@ -55,12 +55,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Odan\\Session\\": "src/"
+            "Pinga\\Pingsess\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Odan\\Session\\Test\\": "tests/"
+            "Pinga\\Pingsess\\Test\\": "tests/"
         }
     },
     "config": {
