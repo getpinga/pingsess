@@ -42,6 +42,21 @@ $session->destroy();
 ## Specific examples
 
 ```
+$config = [
+    'name' => 'app',
+];
+
+// Create a standard session handler
+$session = new \Odan\Session\PhpSession($config);
+```
+
+```
+use Odan\Session\MemorySession;
+
+$session = new MemorySession();
+```
+
+```
 use League\Flysystem\Filesystem;
 use League\Flysystem\Adapter\Local;
 use Odan\Session\FilesystemSession;
