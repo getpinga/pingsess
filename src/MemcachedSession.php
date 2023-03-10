@@ -1,3 +1,5 @@
+<?php
+
 namespace Odan\Session;
 
 use Memcached;
@@ -28,6 +30,15 @@ final class MemcachedSession implements SessionInterface, SessionManagerInterfac
                 $this->options[$key] = $options[$key];
             }
         }
+
+        $id = $_COOKIE[$this->options['name']] ?? '';
+        if (!$id) {
+            $id = str_replace('.', '', uniqid($this->options['prefix'], true));
+            setcookie($this->options['name'], $id, time() + $this->options['lifetime'], '/', '', false, true);
+        }
+
+        session_id($id);
+        session_set_save_handler($this, true);
     }
 
     public function getFlash(): FlashInterface
@@ -61,6 +72,7 @@ final class MemcachedSession implements SessionInterface, SessionManagerInterfac
     {
         $this->memcached->delete($this->id);
         $this->regenerateId();
+        setcookie($this->options['name'], '', time() - 3600, '/', '', false, true);
     }
 
     public function getId(): string
@@ -115,6 +127,7 @@ final class MemcachedSession implements SessionInterface, SessionManagerInterfac
     {
         $data = $this->all();
         $this->memcached->set($this->id, $data, $this->options['lifetime']);
+        setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
     }
 
 }
