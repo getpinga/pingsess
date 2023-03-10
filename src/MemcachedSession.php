@@ -116,3 +116,5 @@ final class MemcachedSession implements SessionInterface, SessionManagerInterfac
         $data = $this->all();
         $this->memcached->set($this->id, $data, $this->options['lifetime']);
     }
+
+}
