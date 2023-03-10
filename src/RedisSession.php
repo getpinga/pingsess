@@ -3,6 +3,7 @@
 namespace Odan\Session;
 
 use Redis;
+use \Pinga\Cookie;
 
 /**
  * A Redis session handler adapter.
@@ -38,7 +39,7 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
         $this->id = $_COOKIE[$this->options['name']] ?? '';
         if (!$this->id) {
             $this->id = str_replace('.', '', uniqid('sess_', true));
-            setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
+            Cookie::setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
         }
 
         $key = $this->options['name'] . ':' . $this->id;
@@ -75,7 +76,7 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
     {
         $oldId = $this->id;
         $this->id = str_replace('.', '', uniqid('sess_', true));
-        setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
+        Cookie::setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
 
         $oldKey = $this->options['name'] . ':' . $oldId;
         $newKey = $this->options['name'] . ':' . $this->id;
@@ -140,7 +141,7 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
         $key = $this->options['name'] . ':' . $this->id;
         $this->redis->set($key, $payload, $this->options['lifetime']);
 
-        setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
+        Cookie::setcookie($this->options['name'], $this->id, time() + $this->options['lifetime'], '/', '', false, true);
     }
 
     private function load(): void
