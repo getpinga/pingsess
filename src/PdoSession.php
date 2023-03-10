@@ -3,7 +3,7 @@
 namespace Odan\Session;
 
 use PDO;
-use Pinga\Cookie;
+use \Pinga\Cookie;
 
 /**
  * A PDO session handler adapter.
