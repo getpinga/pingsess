@@ -31,6 +31,15 @@ final class PdoSession implements SessionInterface, SessionManagerInterface
                 $this->options[$key] = $options[$key];
             }
         }
+
+        $id = $_COOKIE[$this->options['name']] ?? '';
+        if (!$id) {
+            $id = str_replace('.', '', uniqid('sess_', true));
+            setcookie($this->options['name'], $id, time() + $this->options['lifetime'], '/', '', false, true);
+        }
+
+        session_id($id);
+        session_set_save_handler($this, true);
     }
 
     public function getFlash(): FlashInterface
@@ -67,6 +76,8 @@ final class PdoSession implements SessionInterface, SessionManagerInterface
         $stmt->execute();
 
         $this->regenerateId();
+		
+        setcookie($this->options['name'], '', time() - 3600, '/', '', false, true);
     }
 
     public function getId(): string
@@ -164,6 +175,8 @@ final class PdoSession implements SessionInterface, SessionManagerInterface
             $stmt->bindValue(':expiry', time() + $this->options['lifetime']);
             $stmt->execute();
         }
+		
+        setcookie($this->options['name'], $id, time() + $this->options['lifetime'], '/', '', false, true);
     }
 
 }
