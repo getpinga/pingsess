@@ -89,6 +89,7 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
         $this->regenerateId();
         $this->storage = [];
         $this->flash = new Flash($this->storage);
+        Cookie::setcookie($this->options['name'], '', time() - 3600, '/', '', false, true);
     }
 
     public function getId(): string
