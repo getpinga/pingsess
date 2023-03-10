@@ -1,10 +1,10 @@
 <?php
 
-namespace Odan\Session\Test;
+namespace Pinga\Pingsess\Test;
 
-use Odan\Session\PhpSession;
-use Odan\Session\SessionInterface;
-use Odan\Session\SessionManagerInterface;
+use Pinga\Pingsess\PhpSession;
+use Pinga\Pingsess\SessionInterface;
+use Pinga\Pingsess\SessionManagerInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
