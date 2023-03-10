@@ -1,6 +1,6 @@
 <?php
 
-namespace Odan\Session;
+namespace Pinga\Pingsess;
 
 /**
  * Flash messages.
