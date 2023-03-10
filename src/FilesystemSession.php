@@ -2,11 +2,10 @@
 
 namespace Odan\Session;
 
-use League\Flysystem\FilesystemInterface;
-use League\Flysystem\Adapter\Local;
+use League\Flysystem\Filesystem;
 
 /**
- * A session handler adapter that stores data on the filesystem.
+ * A Flysystem session handler adapter.
  */
 final class FilesystemSession implements SessionInterface, SessionManagerInterface
 {
@@ -15,17 +14,17 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
         'lifetime' => 7200,
     ];
 
-    private array $storage;
+    private Filesystem $filesystem;
+
+    private array $storage = [];
 
     private Flash $flash;
 
     private string $id = '';
 
     private bool $started = false;
-	
-	private FilesystemInterface $filesystem;
 
-    public function __construct(array $options = [], FilesystemInterface $filesystem)
+    public function __construct(Filesystem $filesystem, array $options = [])
     {
         $keys = array_keys($this->options);
         foreach ($keys as $key) {
@@ -34,10 +33,19 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
             }
         }
 
-        $session = [];
-        $this->storage = &$session;
-        $this->flash = new Flash($session);
         $this->filesystem = $filesystem;
+
+        if (!$this->id) {
+            $this->regenerateId();
+        }
+
+        $sessionFilename = $this->options['name'] . '/' . $this->id . '.json';
+        if ($this->filesystem->has($sessionFilename)) {
+            $content = $this->filesystem->read($sessionFilename);
+            $this->storage = json_decode($content, true);
+        }
+
+        $this->flash = new Flash($this->storage);
     }
 
     public function getFlash(): FlashInterface
@@ -47,18 +55,9 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
 
     public function start(): void
     {
-        if (!$this->id) {
-            $this->regenerateId();
+        if (!$this->started) {
+            $this->started = true;
         }
-
-        if ($this->filesystem->has($this->id)) {
-            $data = $this->filesystem->read($this->id);
-            if ($data !== false) {
-                $this->storage = unserialize($data);
-            }
-        }
-
-        $this->started = true;
     }
 
     public function isStarted(): bool
@@ -73,11 +72,10 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
 
     public function destroy(): void
     {
-        $keys = array_keys($this->storage);
-        foreach ($keys as $key) {
-            unset($this->storage[$key]);
-        }
+        $this->filesystem->delete($this->options['name'] . '/' . $this->id . '.json');
         $this->regenerateId();
+        $this->storage = [];
+        $this->flash = new Flash($this->storage);
     }
 
     public function getId(): string
@@ -92,24 +90,28 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
 
     public function get(string $key, mixed $default = null): mixed
     {
-        return $this->storage[$key] ?? $default;
+        if (array_key_exists($key, $this->storage)) {
+            return $this->storage[$key];
+        } else {
+            return $default;
+        }
     }
 
     public function all(): array
     {
-        return (array)$this->storage;
+        return $this->storage;
     }
 
     public function set(string $key, mixed $value): void
     {
         $this->storage[$key] = $value;
+        $this->filesystem->put($this->options['name'] . '/' . $this->id . '.json', json_encode($this->storage));
     }
 
     public function setValues(array $values): void
     {
-        foreach ($values as $key => $value) {
-            $this->storage[$key] = $value;
-        }
+        $this->storage = array_merge($this->storage, $values);
+        $this->filesystem->put($this->options['name'] . '/' . $this->id . '.json', json_encode($this->storage));
     }
 
     public function has(string $key): bool
@@ -120,19 +122,19 @@ final class FilesystemSession implements SessionInterface, SessionManagerInterfa
     public function delete(string $key): void
     {
         unset($this->storage[$key]);
+        $this->filesystem->put($$this->options['name'] . '/' . $this->id . '.json', json_encode($this->storage));
     }
 
     public function clear(): void
     {
-        $keys = array_keys($this->storage);
-        foreach ($keys as $key) {
-            unset($this->storage[$key]);
-        }
+        $this->filesystem->delete($this->options['name'] . '/' . $this->id . '.json');
+        $this->storage = [];
     }
 
     public function save(): void
     {
-        $this->filesystem->put($this->id, serialize($this->storage));
+        // The session data is saved automatically on each set(), setValues(), delete() and clear() call.
+        // This method does not need to do anything.
     }
-	
+
 }
