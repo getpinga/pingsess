@@ -1,8 +1,8 @@
 <?php
 
-namespace Odan\Session;
+namespace Pinga\Pingsess;
 
-use Odan\Session\Exception\SessionException;
+use Pinga\Pingsess\Exception\SessionException;
 
 /**
  * A PHP Session handler adapter.
