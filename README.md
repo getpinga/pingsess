@@ -1,4 +1,4 @@
-# Session handler
+# Pingsess
 
 [![Latest Version on Packagist](https://img.shields.io/github/release/odan/session.svg)](https://github.com/odan/session/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
@@ -7,7 +7,7 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/odan/session/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/odan/session/?branch=master)
 [![Total Downloads](https://img.shields.io/packagist/dt/odan/session.svg)](https://packagist.org/packages/odan/session/stats)
 
-A middleware (PSR-15) oriented session and flash message handler for PHP.
+A middleware (PSR-15) oriented session and flash message handler for PHP, based on the wonderful [odan/session](https://github.com/odan/session).
 
 ## Common example
 
