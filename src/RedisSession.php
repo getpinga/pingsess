@@ -1,6 +1,6 @@
-<?php
-
 namespace Odan\Session;
+
+use Redis;
 
 /**
  * A Redis session handler adapter.
@@ -11,46 +11,28 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
         'name' => 'app',
         'lifetime' => 7200,
     ];
-	
-    private array $redisOptions = [];
 
-    private array $storage;
-
-    private Flash $flash;
+    private Redis $redis;
 
     private string $id = '';
 
     private bool $started = false;
 
-    public function __construct(array $options = [])
+    public function __construct(Redis $redis, array $options = [])
     {
+        $this->redis = $redis;
+
         $keys = array_keys($this->options);
         foreach ($keys as $key) {
             if (array_key_exists($key, $options)) {
                 $this->options[$key] = $options[$key];
             }
         }
-
-        $this->redisOptions = $options['redisOptions'] ?? [];
-
-        $this->redis = new Redis();
-        $this->redis->connect(
-            $this->redisOptions['host'] ?? '127.0.0.1',
-            $this->redisOptions['port'] ?? 6379
-        );
-
-        $session = [];
-        $sessionId = $this->getId();
-        if ($this->redis->exists($sessionId)) {
-            $session = unserialize($this->redis->get($sessionId));
-        }
-        $this->storage = &$session;
-        $this->flash = new Flash($session);
     }
 
     public function getFlash(): FlashInterface
     {
-        return $this->flash;
+        throw new \RuntimeException('Flash messages are not supported in RedisSession.');
     }
 
     public function start(): void
@@ -59,7 +41,10 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
             $this->regenerateId();
         }
 
-        $this->started = true;
+        if (!$this->started) {
+            $this->load();
+            $this->started = true;
+        }
     }
 
     public function isStarted(): bool
@@ -74,10 +59,7 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
 
     public function destroy(): void
     {
-        $keys = array_keys($this->storage);
-        foreach ($keys as $key) {
-            unset($this->storage[$key]);
-        }
+        $this->redis->del($this->id);
         $this->regenerateId();
     }
 
@@ -93,53 +75,48 @@ final class RedisSession implements SessionInterface, SessionManagerInterface
 
     public function get(string $key, mixed $default = null): mixed
     {
-        return $this->storage[$key] ?? $default;
+        $value = $this->redis->hget($this->id, $key);
+        return ($value !== false) ? $value : $default;
     }
 
     public function all(): array
     {
-        return (array)$this->storage;
+        return $this->redis->hgetall($this->id);
     }
 
     public function set(string $key, mixed $value): void
     {
-        $this->storage[$key] = $value;
+        $this->redis->hset($this->id, $key, $value);
     }
 
     public function setValues(array $values): void
     {
-        foreach ($values as $key => $value) {
-            $this->storage[$key] = $value;
-        }
+        $this->redis->hMset($this->id, $values);
     }
 
     public function has(string $key): bool
     {
-        return array_key_exists($key, $this->storage);
+        return $this->redis->hexists($this->id, $key);
     }
 
     public function delete(string $key): void
     {
-        unset($this->storage[$key]);
+        $this->redis->hdel($this->id, $key);
     }
 
     public function clear(): void
     {
-        $keys = array_keys($this->storage);
-        foreach ($keys as $key) {
-            unset($this->storage[$key]);
-        }
+        $this->redis->del($this->id);
     }
 
     public function save(): void
     {
-        $sessionId = $this->getId();
-        $sessionData = serialize($this->storage);
-        $this->redis->setex(
-            $sessionId,
-            $this->options['lifetime'],
-            $sessionData,
-            $this->redisOptions['prefix'] ?? null
-        );
+        $this->redis->expire($this->id, $this->options['lifetime']);
+    }
+
+    private function load(): void
+    {
+        $data = $this->redis->hgetall($this->id);
+        $this->storage = array_combine(array_keys($data), array_values($data));
     }
 }
