@@ -1,6 +1,6 @@
 <?php
 
-namespace Odan\Session\Exception;
+namespace Pinga\Pingsess\Exception;
 
 use RuntimeException;
 
